@@ -1,376 +1,280 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Điểm danh QR</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Điểm danh QR</title>
 
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-<style>
-*{box-sizing:border-box}
-body{
-  font-family:Arial,sans-serif;
-  margin:0;
-  background:#f5f6f8;
-  color:#1f2937
-}
-.wrap{
-  max-width:560px;
-  margin:auto;
-  padding:16px
-}
-h1{
-  text-align:center;
-  font-size:25px;
-  margin:12px 0 18px
-}
-.card{
-  background:white;
-  border-radius:18px;
-  padding:16px;
-  box-shadow:0 3px 15px rgba(0,0,0,.08);
-  margin-bottom:14px
-}
-.small{
-  font-size:13px;
-  color:#6b7280
-}
-.activity{
-  display:flex;
-  gap:10px;
-  margin-top:10px
-}
-button{
-  border:0;
-  border-radius:12px;
-  padding:13px 16px;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer
-}
-.activity button{
-  flex:1;
-  background:#e8edf5
-}
-.activity button.active{
-  background:#1976d2;
-  color:white
-}
-#startBtn{
-  width:100%;
-  background:#16a34a;
-  color:white;
-  margin-top:14px
-}
-#stopBtn{
-  width:100%;
-  background:#dc2626;
-  color:white;
-  margin-top:10px;
-  display:none
-}
-#reader{
-  width:100%;
-  margin-top:14px
-}
-.status{
-  min-height:48px;
-  padding:12px;
-  border-radius:12px;
-  background:#f0f3f7;
-  margin-top:14px;
-  text-align:center
-}
-.ok{background:#e8f5e9}
-.warn{background:#fff8e1}
-.err{background:#ffebee;color:#b91c1c}
-</style>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f6f8;
+      color: #172033;
+    }
+
+    .wrap {
+      max-width: 520px;
+      margin: auto;
+      padding: 18px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 26px;
+      margin: 10px 0 18px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 3px 15px rgba(0,0,0,.08);
+    }
+
+    .label {
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .activities {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      flex: 1;
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #e8edf5;
+      color: #172033;
+    }
+
+    button.active {
+      background: #1976d2;
+      color: white;
+    }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+
+    #status {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      background: #f0f2f5;
+    }
+
+    .success {
+      background: #dff6e5 !important;
+      color: #16743a;
+    }
+
+    .error {
+      background: #ffe1e1 !important;
+      color: #b42323;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .restart {
+      margin-top: 12px;
+      width: 100%;
+      background: #1976d2;
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="wrap">
 
-<h1>Điểm danh QR</h1>
+  <h1>Điểm danh QR</h1>
 
-<div class="card">
-  <div class="small">Chọn hoạt động trước khi quét:</div>
+  <div class="card">
+    <div class="label">Chọn hoạt động trước khi quét:</div>
 
-  <div class="activity">
-    <button id="cateBtn"
-            class="active"
-            onclick="setActivity('HD002')">
-      📖 Học Giáo Lý
-    </button>
+    <div class="activities">
+      <button id="btnGiaoLy" onclick="chonHoatDong('Học Giáo Lý')">
+        📖 Học Giáo Lý
+      </button>
 
-    <button id="massBtn"
-            onclick="setActivity('HD001')">
-      ⛪ Đi Lễ
-    </button>
-  </div>
-</div>
-
-<div class="card">
-
-  <button id="startBtn" onclick="startCamera()">
-    📷 BẬT CAMERA
-  </button>
-
-  <button id="stopBtn" onclick="stopCamera()">
-    ⛔ TẮT CAMERA
-  </button>
-
-  <div id="reader"></div>
-
-  <div id="status" class="status">
-    Bấm "BẬT CAMERA" để bắt đầu quét.
+      <button id="btnDiLe" onclick="chonHoatDong('Đi Lễ')">
+        ⛪ Đi Lễ
+      </button>
+    </div>
   </div>
 
-</div>
+  <div class="card">
+    <div id="status">
+      Vui lòng chọn hoạt động để bắt đầu quét QR.
+    </div>
+  </div>
+
+  <div class="card hidden" id="cameraCard">
+    <div id="reader"></div>
+  </div>
+
+  <button class="restart hidden" id="restartBtn" onclick="batDauQuet()">
+    🔄 Quét người tiếp theo
+  </button>
 
 </div>
 
 <script>
 
-let activityCode = "HD002";
-let scanner = null;
-let running = false;
-let lastCode = "";
-let lastTime = 0;
+  // GOOGLE APPS SCRIPT CỦA BẠN
+  const API_URL =
+    "https://script.google.com/macros/s/AKfycbzaD30yOH5QPpE30eQP9HtEKHXmB6R7ReSAaZcPQn9JRYIIyHdcxWieA_bfQjYsDsl7/exec";
 
-/* Địa chỉ Apps Script của bạn */
-const GAS_URL =
-"https://script.google.com/macros/s/AKfycbzaD30yOH5QPpE30eQP9HtEKHXmB6R7ReSAaZcPQn9JRYIIyHdcxWieA_bfQjYsDsl7/exec";
+  let hoatDong = "";
+  let scanner = null;
+  let dangGui = false;
 
 
-function setActivity(code){
+  function chonHoatDong(hoatDongMoi) {
 
-  activityCode = code;
+    hoatDong = hoatDongMoi;
 
-  document
-    .getElementById("cateBtn")
-    .classList.toggle("active", code === "HD002");
+    document.getElementById("btnGiaoLy").classList.remove("active");
+    document.getElementById("btnDiLe").classList.remove("active");
 
-  document
-    .getElementById("massBtn")
-    .classList.toggle("active", code === "HD001");
+    if (hoatDongMoi === "Học Giáo Lý") {
+      document.getElementById("btnGiaoLy").classList.add("active");
+    } else {
+      document.getElementById("btnDiLe").classList.add("active");
+    }
 
-  setStatus(
-    code === "HD002"
-      ? "Đã chọn Học Giáo Lý."
-      : "Đã chọn Đi Lễ.",
-    ""
-  );
-}
+    document.getElementById("status").className = "";
+    document.getElementById("status").innerHTML =
+      "📷 Đang mở camera để quét QR...";
 
+    document.getElementById("cameraCard").classList.remove("hidden");
+    document.getElementById("restartBtn").classList.add("hidden");
 
-function setStatus(msg, cls){
-
-  const el = document.getElementById("status");
-
-  el.className = "status " + (cls || "");
-
-  el.textContent = msg;
-}
+    batDauQuet();
+  }
 
 
-function beep(ok=true){
+  function batDauQuet() {
 
-  try{
+    dangGui = false;
 
-    const AudioContext =
-      window.AudioContext ||
-      window.webkitAudioContext;
+    document.getElementById("cameraCard").classList.remove("hidden");
+    document.getElementById("restartBtn").classList.add("hidden");
 
-    const ctx = new AudioContext();
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.frequency.value = ok ? 880 : 220;
-
-    gain.gain.value = 0.08;
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-
-    osc.stop(ctx.currentTime + 0.12);
-
-  }catch(e){}
-}
-
-
-/* QUAN TRỌNG:
-   Camera chỉ được mở sau khi người dùng bấm nút.
-*/
-async function startCamera(){
-
-  if(running) return;
-
-  try{
-
-    setStatus(
-      "Đang xin quyền sử dụng camera...",
-      "warn"
-    );
-
-    /* Xin quyền camera trực tiếp */
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
-        video:{
-          facingMode:{ideal:"environment"}
-        },
-        audio:false
-      });
-
-    /* Tắt stream thử */
-    stream.getTracks().forEach(track => track.stop());
+    if (scanner) {
+      try {
+        scanner.clear();
+      } catch (e) {}
+    }
 
     scanner = new Html5Qrcode("reader");
 
-    await scanner.start(
-
-      {facingMode:"environment"},
+    scanner.start(
+      { facingMode: "environment" },
 
       {
-        fps:10,
-        qrbox:{
-          width:250,
-          height:250
+        fps: 10,
+        qrbox: {
+          width: 250,
+          height: 250
         }
       },
 
-      onScanSuccess,
+      qrCodeMessage => {
+        if (dangGui) return;
 
-      function(errorMessage){
-        /* Không cần báo lỗi mỗi frame */
+        dangGui = true;
+
+        xuLyQR(qrCodeMessage);
+      },
+
+      errorMessage => {
+        // Không cần hiện lỗi liên tục khi camera đang tìm QR
       }
 
-    );
+    ).catch(err => {
 
-    running = true;
+      document.getElementById("status").className = "error";
 
-    document.getElementById("startBtn").style.display = "none";
-    document.getElementById("stopBtn").style.display = "block";
+      document.getElementById("status").innerHTML =
+        "❌ Không mở được camera.<br><br>" +
+        "Hãy cho phép Camera cho trang này rồi tải lại.";
 
-    setStatus(
-      "📷 Camera đang hoạt động. Đưa mã QR vào khung.",
-      "ok"
-    );
-
-  }catch(error){
-
-    console.error(error);
-
-    setStatus(
-      "❌ Không mở được camera. Hãy bấm biểu tượng 🔒 bên trái địa chỉ trang → Camera → Cho phép, sau đó tải lại trang.",
-      "err"
-    );
-
-  }
-}
-
-
-async function stopCamera(){
-
-  try{
-
-    if(scanner && running){
-
-      await scanner.stop();
-
-      scanner.clear();
-
-    }
-
-  }catch(e){}
-
-  running = false;
-
-  document.getElementById("startBtn").style.display = "block";
-  document.getElementById("stopBtn").style.display = "none";
-
-  setStatus(
-    "Camera đã tắt. Bấm BẬT CAMERA để quét tiếp.",
-    ""
-  );
-}
-
-
-async function onScanSuccess(decodedText){
-
-  const now = Date.now();
-
-  /* Không quét cùng một mã liên tục */
-  if(
-    decodedText === lastCode &&
-    now - lastTime < 3000
-  ){
-    return;
+    });
   }
 
-  lastCode = decodedText;
-  lastTime = now;
 
-  beep(true);
+  async function xuLyQR(qrData) {
 
-  setStatus(
-    "🔎 Đã đọc QR: " + decodedText +
-    "\nĐang xử lý...",
-    "warn"
-  );
+    document.getElementById("status").className = "";
 
-  /*
-    Gửi mã QR về Apps Script.
-    Nếu Apps Script của bạn nhận code/activity,
-    nó sẽ xử lý điểm danh.
-  */
+    document.getElementById("status").innerHTML =
+      "⏳ Đang ghi nhận điểm danh...";
 
-  try{
+    try {
 
-    const url =
-      GAS_URL +
-      "?code=" +
-      encodeURIComponent(decodedText) +
-      "&activity=" +
-      encodeURIComponent(activityCode);
+      if (scanner) {
+        try {
+          await scanner.stop();
+        } catch (e) {}
+      }
 
-    const response =
-      await fetch(url, {
-        method:"GET",
-        redirect:"follow"
+      const url =
+        API_URL +
+        "?qr=" + encodeURIComponent(qrData) +
+        "&hoatdong=" + encodeURIComponent(hoatDong) +
+        "&thoigian=" + encodeURIComponent(new Date().toISOString());
+
+      const response = await fetch(url, {
+        method: "GET",
+        mode: "cors"
       });
 
-    const text = await response.text();
+      const text = await response.text();
 
-    console.log("Apps Script:", text);
+      console.log("Google Apps Script:", text);
 
-    setStatus(
-      "✅ Đã quét mã: " + decodedText +
-      "\nHoạt động: " +
-      (activityCode === "HD002"
-        ? "Học Giáo Lý"
-        : "Đi Lễ"),
-      "ok"
-    );
+      document.getElementById("status").className = "success";
 
-  }catch(error){
+      document.getElementById("status").innerHTML =
+        "✅ Điểm danh thành công!<br>" +
+        "<b>" + hoatDong + "</b>";
 
-    console.error(error);
+      document.getElementById("restartBtn").classList.remove("hidden");
 
-    setStatus(
-      "✅ Đã đọc được QR: " +
-      decodedText +
-      "\nNhưng chưa kết nối được máy chủ.",
-      "warn"
-    );
+    } catch (error) {
 
+      console.error(error);
+
+      document.getElementById("status").className = "error";
+
+      document.getElementById("status").innerHTML =
+        "❌ Không gửi được dữ liệu.<br>" +
+        "Vui lòng thử quét lại.";
+
+      document.getElementById("restartBtn").classList.remove("hidden");
+    }
   }
-
-}
 
 </script>
 
