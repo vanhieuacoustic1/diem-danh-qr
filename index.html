@@ -36,7 +36,7 @@
       border-radius: 18px;
       padding: 16px;
       margin-bottom: 14px;
-      box-shadow: 0 3px 15px rgba(0,0,0,.08);
+      box-shadow: 0 3px 15px rgba(0, 0, 0, .08);
     }
 
     .label {
@@ -174,17 +174,24 @@
   }
 
 
-  function batDauQuet() {
+  async function batDauQuet() {
 
     dangGui = false;
 
     document.getElementById("cameraCard").classList.remove("hidden");
     document.getElementById("restartBtn").classList.add("hidden");
 
+    // Nếu scanner cũ còn tồn tại thì dừng/xóa trước
     if (scanner) {
       try {
-        scanner.clear();
+        await scanner.stop();
       } catch (e) {}
+
+      try {
+        await scanner.clear();
+      } catch (e) {}
+
+      scanner = null;
     }
 
     scanner = new Html5Qrcode("reader");
@@ -209,10 +216,12 @@
       },
 
       errorMessage => {
-        // Không cần hiện lỗi liên tục khi camera đang tìm QR
+        // Không hiện lỗi liên tục khi camera đang tìm QR
       }
 
     ).catch(err => {
+
+      console.error("Camera error:", err);
 
       document.getElementById("status").className = "error";
 
@@ -220,6 +229,7 @@
         "❌ Không mở được camera.<br><br>" +
         "Hãy cho phép Camera cho trang này rồi tải lại.";
 
+      dangGui = false;
     });
   }
 
@@ -237,6 +247,12 @@
         try {
           await scanner.stop();
         } catch (e) {}
+
+        try {
+          await scanner.clear();
+        } catch (e) {}
+
+        scanner = null;
       }
 
       const url =
@@ -245,14 +261,18 @@
         "&hoatdong=" + encodeURIComponent(hoatDong) +
         "&thoigian=" + encodeURIComponent(new Date().toISOString());
 
-      const response = await fetch(url, {
+      /*
+       * Google Apps Script có thể chuyển hướng sang một URL khác.
+       * Dùng no-cors để trình duyệt gửi GET request mà không bị lỗi
+       * CORS khi chạy trên GitHub Pages.
+       */
+      await fetch(url, {
         method: "GET",
-        mode: "cors"
+        mode: "no-cors",
+        cache: "no-store"
       });
 
-      const text = await response.text();
-
-      console.log("Google Apps Script:", text);
+      console.log("Đã gửi dữ liệu đến Google Apps Script:", url);
 
       document.getElementById("status").className = "success";
 
@@ -264,7 +284,7 @@
 
     } catch (error) {
 
-      console.error(error);
+      console.error("Lỗi gửi dữ liệu:", error);
 
       document.getElementById("status").className = "error";
 
@@ -273,6 +293,8 @@
         "Vui lòng thử quét lại.";
 
       document.getElementById("restartBtn").classList.remove("hidden");
+
+      dangGui = false;
     }
   }
 
