@@ -36,7 +36,7 @@
       border-radius: 18px;
       padding: 16px;
       margin-bottom: 14px;
-      box-shadow: 0 3px 15px rgba(0, 0, 0, .08);
+      box-shadow: 0 3px 15px rgba(0,0,0,.08);
     }
 
     .label {
@@ -113,13 +113,19 @@
     <div class="label">Chọn hoạt động trước khi quét:</div>
 
     <div class="activities">
-      <button id="btnGiaoLy" onclick="chonHoatDong('Học Giáo Lý')">
+
+      <button
+        id="btnGiaoLy"
+        onclick="chonHoatDong('Học Giáo Lý')">
         📖 Học Giáo Lý
       </button>
 
-      <button id="btnDiLe" onclick="chonHoatDong('Đi Lễ')">
+      <button
+        id="btnDiLe"
+        onclick="chonHoatDong('Đi Lễ')">
         ⛪ Đi Lễ
       </button>
+
     </div>
   </div>
 
@@ -133,56 +139,111 @@
     <div id="reader"></div>
   </div>
 
-  <button class="restart hidden" id="restartBtn" onclick="batDauQuet()">
+  <button
+    class="restart hidden"
+    id="restartBtn"
+    onclick="batDauQuet()">
     🔄 Quét người tiếp theo
   </button>
 
 </div>
 
+
 <script>
 
-  // GOOGLE APPS SCRIPT CỦA BẠN
+  /*
+   * =====================================================
+   * GOOGLE APPS SCRIPT MỚI
+   * =====================================================
+   */
+
   const API_URL =
-    "https://script.google.com/macros/s/AKfycbzaD30yOH5QPpE30eQP9HtEKHXmB6R7ReSAaZcPQn9JRYIIyHdcxWieA_bfQjYsDsl7/exec";
+    "https://script.google.com/macros/s/AKfycbyCoPEF_t7Z2nE9oEKvWvSW0rva756EN1_diTKwG4bwHmhdpk60ks-Jxw30qFohjWnS/exec";
+
 
   let hoatDong = "";
   let scanner = null;
   let dangGui = false;
 
 
+  /*
+   * =====================================================
+   * CHỌN HOẠT ĐỘNG
+   * =====================================================
+   */
+
   function chonHoatDong(hoatDongMoi) {
 
     hoatDong = hoatDongMoi;
 
-    document.getElementById("btnGiaoLy").classList.remove("active");
-    document.getElementById("btnDiLe").classList.remove("active");
+    document
+      .getElementById("btnGiaoLy")
+      .classList.remove("active");
+
+    document
+      .getElementById("btnDiLe")
+      .classList.remove("active");
+
 
     if (hoatDongMoi === "Học Giáo Lý") {
-      document.getElementById("btnGiaoLy").classList.add("active");
+
+      document
+        .getElementById("btnGiaoLy")
+        .classList.add("active");
+
     } else {
-      document.getElementById("btnDiLe").classList.add("active");
+
+      document
+        .getElementById("btnDiLe")
+        .classList.add("active");
+
     }
 
+
     document.getElementById("status").className = "";
+
     document.getElementById("status").innerHTML =
       "📷 Đang mở camera để quét QR...";
 
-    document.getElementById("cameraCard").classList.remove("hidden");
-    document.getElementById("restartBtn").classList.add("hidden");
+
+    document
+      .getElementById("cameraCard")
+      .classList.remove("hidden");
+
+    document
+      .getElementById("restartBtn")
+      .classList.add("hidden");
+
 
     batDauQuet();
   }
 
 
+  /*
+   * =====================================================
+   * KHỞI ĐỘNG CAMERA
+   * =====================================================
+   */
+
   async function batDauQuet() {
 
     dangGui = false;
 
-    document.getElementById("cameraCard").classList.remove("hidden");
-    document.getElementById("restartBtn").classList.add("hidden");
+    document
+      .getElementById("cameraCard")
+      .classList.remove("hidden");
 
-    // Nếu scanner cũ còn tồn tại thì dừng/xóa trước
+    document
+      .getElementById("restartBtn")
+      .classList.add("hidden");
+
+
+    /*
+     * Dừng camera cũ nếu có
+     */
+
     if (scanner) {
+
       try {
         await scanner.stop();
       } catch (e) {}
@@ -194,20 +255,36 @@
       scanner = null;
     }
 
+
+    /*
+     * Tạo camera mới
+     */
+
     scanner = new Html5Qrcode("reader");
 
+
     scanner.start(
-      { facingMode: "environment" },
+
+      {
+        facingMode: "environment"
+      },
 
       {
         fps: 10,
+
         qrbox: {
           width: 250,
           height: 250
         }
       },
 
+
+      /*
+       * QR ĐƯỢC QUÉT
+       */
+
       qrCodeMessage => {
+
         if (dangGui) return;
 
         dangGui = true;
@@ -215,87 +292,168 @@
         xuLyQR(qrCodeMessage);
       },
 
-      errorMessage => {
-        // Không hiện lỗi liên tục khi camera đang tìm QR
-      }
 
-    ).catch(err => {
+      /*
+       * Không hiện lỗi khi camera
+       * đang tìm QR
+       */
+
+      errorMessage => {}
+
+    )
+
+
+    /*
+     * CAMERA KHÔNG MỞ ĐƯỢC
+     */
+
+    .catch(err => {
 
       console.error("Camera error:", err);
 
-      document.getElementById("status").className = "error";
+      document
+        .getElementById("status")
+        .className = "error";
 
-      document.getElementById("status").innerHTML =
-        "❌ Không mở được camera.<br><br>" +
-        "Hãy cho phép Camera cho trang này rồi tải lại.";
+      document
+        .getElementById("status")
+        .innerHTML =
+          "❌ Không mở được camera.<br><br>" +
+          "Hãy cho phép Camera cho trang này rồi tải lại.";
 
       dangGui = false;
     });
+
   }
 
 
+  /*
+   * =====================================================
+   * XỬ LÝ QR
+   * =====================================================
+   */
+
   async function xuLyQR(qrData) {
 
-    document.getElementById("status").className = "";
+    document
+      .getElementById("status")
+      .className = "";
 
-    document.getElementById("status").innerHTML =
-      "⏳ Đang ghi nhận điểm danh...";
+
+    document
+      .getElementById("status")
+      .innerHTML =
+        "⏳ Đang ghi nhận điểm danh...";
+
+
+    /*
+     * Tắt camera sau khi quét
+     */
+
+    if (scanner) {
+
+      try {
+        await scanner.stop();
+      } catch (e) {}
+
+      try {
+        await scanner.clear();
+      } catch (e) {}
+
+      scanner = null;
+    }
+
+
+    /*
+     * =================================================
+     * TẠO URL GỬI VỀ GOOGLE APPS SCRIPT
+     * =================================================
+     */
+
+    const url =
+      API_URL +
+      "?qr=" +
+      encodeURIComponent(qrData) +
+
+      "&hoatdong=" +
+      encodeURIComponent(hoatDong) +
+
+      "&thoigian=" +
+      encodeURIComponent(new Date().toISOString());
+
+
+    console.log("QR:", qrData);
+    console.log("Hoạt động:", hoatDong);
+    console.log("URL gửi:", url);
+
 
     try {
 
-      if (scanner) {
-        try {
-          await scanner.stop();
-        } catch (e) {}
-
-        try {
-          await scanner.clear();
-        } catch (e) {}
-
-        scanner = null;
-      }
-
-      const url =
-        API_URL +
-        "?qr=" + encodeURIComponent(qrData) +
-        "&hoatdong=" + encodeURIComponent(hoatDong) +
-        "&thoigian=" + encodeURIComponent(new Date().toISOString());
-
       /*
-       * Google Apps Script có thể chuyển hướng sang một URL khác.
-       * Dùng no-cors để trình duyệt gửi GET request mà không bị lỗi
-       * CORS khi chạy trên GitHub Pages.
+       * Gửi dữ liệu sang Apps Script.
+       *
+       * no-cors được dùng vì GitHub Pages
+       * và Apps Script khác domain.
        */
+
       await fetch(url, {
+
         method: "GET",
+
         mode: "no-cors",
+
         cache: "no-store"
+
       });
 
-      console.log("Đã gửi dữ liệu đến Google Apps Script:", url);
 
-      document.getElementById("status").className = "success";
+      /*
+       * Hiển thị thành công
+       */
 
-      document.getElementById("status").innerHTML =
-        "✅ Điểm danh thành công!<br>" +
-        "<b>" + hoatDong + "</b>";
+      document
+        .getElementById("status")
+        .className = "success";
 
-      document.getElementById("restartBtn").classList.remove("hidden");
+
+      document
+        .getElementById("status")
+        .innerHTML =
+          "✅ Điểm danh thành công!<br><br>" +
+          "<b>" + hoatDong + "</b><br>" +
+          "<small>QR đã được gửi đến hệ thống.</small>";
+
+
+      document
+        .getElementById("restartBtn")
+        .classList.remove("hidden");
+
 
     } catch (error) {
 
       console.error("Lỗi gửi dữ liệu:", error);
 
-      document.getElementById("status").className = "error";
 
-      document.getElementById("status").innerHTML =
-        "❌ Không gửi được dữ liệu.<br>" +
-        "Vui lòng thử quét lại.";
+      document
+        .getElementById("status")
+        .className = "error";
 
-      document.getElementById("restartBtn").classList.remove("hidden");
+
+      document
+        .getElementById("status")
+        .innerHTML =
+          "❌ Không gửi được dữ liệu.<br>" +
+          "Vui lòng thử lại.";
+
+
+      document
+        .getElementById("restartBtn")
+        .classList.remove("hidden");
+
 
       dangGui = false;
     }
+
   }
 
 </script>
