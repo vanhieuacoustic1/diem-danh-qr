@@ -2,7 +2,9 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
   <title>Điểm danh QR</title>
 
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -27,34 +29,34 @@
 
     h1 {
       text-align: center;
-      font-size: 26px;
-      margin: 10px 0 18px;
+      font-size: 28px;
+      margin: 12px 0 20px;
     }
 
     .card {
       background: white;
       border-radius: 18px;
       padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 3px 15px rgba(0, 0, 0, .08);
+      margin-bottom: 15px;
+      box-shadow: 0 3px 15px rgba(0,0,0,.08);
     }
 
     .label {
-      font-size: 14px;
-      margin-bottom: 8px;
+      font-size: 15px;
+      margin-bottom: 10px;
     }
 
     .activities {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
 
     button {
       flex: 1;
       border: 0;
       border-radius: 12px;
-      padding: 13px 8px;
-      font-size: 16px;
+      padding: 15px 8px;
+      font-size: 17px;
       font-weight: bold;
       cursor: pointer;
       background: #e8edf5;
@@ -73,11 +75,11 @@
     }
 
     #status {
-      margin-top: 12px;
-      padding: 12px;
-      border-radius: 10px;
+      padding: 15px;
+      border-radius: 12px;
       text-align: center;
       background: #f0f2f5;
+      font-size: 17px;
     }
 
     .success {
@@ -90,15 +92,27 @@
       color: #b42323;
     }
 
+    .waiting {
+      background: #fff4d6 !important;
+      color: #7a5a00;
+    }
+
     .hidden {
       display: none;
     }
 
     .restart {
-      margin-top: 12px;
       width: 100%;
+      margin-top: 12px;
       background: #1976d2;
       color: white;
+    }
+
+    .small {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #666;
+      text-align: center;
     }
   </style>
 </head>
@@ -107,282 +121,391 @@
 
 <div class="wrap">
 
-  <h1>Điểm danh QR</h1>
+  <h1>📷 Điểm danh QR</h1>
 
   <div class="card">
-    <div class="label">Chọn hoạt động trước khi quét:</div>
+
+    <div class="label">
+      <b>Chọn hoạt động trước khi quét:</b>
+    </div>
 
     <div class="activities">
-      <button id="btnGiaoLy" onclick="chonHoatDong('Học Giáo Lý')">
+
+      <button id="btnGiaoLy"
+              onclick="chonHoatDong('Học Giáo Lý')">
         📖 Học Giáo Lý
       </button>
 
-      <button id="btnDiLe" onclick="chonHoatDong('Đi Lễ')">
+      <button id="btnDiLe"
+              onclick="chonHoatDong('Đi Lễ')">
         ⛪ Đi Lễ
       </button>
+
     </div>
+
   </div>
+
 
   <div class="card">
+
     <div id="status">
-      Vui lòng chọn hoạt động để bắt đầu quét QR.
+      Vui lòng chọn hoạt động để bắt đầu.
     </div>
+
   </div>
+
 
   <div class="card hidden" id="cameraCard">
+
     <div id="reader"></div>
+
   </div>
 
-  <button class="restart hidden" id="restartBtn" onclick="batDauQuet()">
+
+  <button
+    class="restart hidden"
+    id="restartBtn"
+    onclick="batDauQuet()">
+
     🔄 Quét người tiếp theo
+
   </button>
 
 </div>
 
+
 <script>
 
-  // =====================================================
-  // GOOGLE APPS SCRIPT MỚI
-  // =====================================================
+/* =====================================================
+   GOOGLE APPS SCRIPT
+   ===================================================== */
 
-  const API_URL =
-    "https://script.google.com/macros/s/AKfycbyCoPEF_t7Z2nE9oEKvWvSW0rva756EN1_diTKwG4bwHmhdpk60ks-Jxw30qFohjWnS/exec";
-
-
-  let hoatDong = "";
-  let scanner = null;
-  let dangGui = false;
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyCoPEF_t7Z2nE9oEKvWvSW0rva756EN1_diTKwG4bwHmhdpk60ks-Jxw30qFohjWnS/exec";
 
 
-  // =====================================================
-  // CHỌN HOẠT ĐỘNG
-  // =====================================================
+/* =====================================================
+   BIẾN
+   ===================================================== */
 
-  function chonHoatDong(hoatDongMoi) {
-
-    hoatDong = hoatDongMoi;
-
-    document.getElementById("btnGiaoLy")
-      .classList.remove("active");
-
-    document.getElementById("btnDiLe")
-      .classList.remove("active");
+let hoatDong = "";
+let scanner = null;
+let dangXuLy = false;
 
 
-    if (hoatDongMoi === "Học Giáo Lý") {
+/* =====================================================
+   CHỌN HOẠT ĐỘNG
+   ===================================================== */
 
-      document.getElementById("btnGiaoLy")
-        .classList.add("active");
+function chonHoatDong(loai) {
 
-    } else {
+  hoatDong = loai;
 
-      document.getElementById("btnDiLe")
-        .classList.add("active");
+  document
+    .getElementById("btnGiaoLy")
+    .classList.remove("active");
 
-    }
-
-
-    document.getElementById("status").className = "";
-
-    document.getElementById("status").innerHTML =
-      "📷 Đang mở camera để quét QR...";
+  document
+    .getElementById("btnDiLe")
+    .classList.remove("active");
 
 
-    document.getElementById("cameraCard")
-      .classList.remove("hidden");
+  if (loai === "Học Giáo Lý") {
 
-    document.getElementById("restartBtn")
-      .classList.add("hidden");
+    document
+      .getElementById("btnGiaoLy")
+      .classList.add("active");
 
+  } else {
 
-    batDauQuet();
+    document
+      .getElementById("btnDiLe")
+      .classList.add("active");
+
   }
 
 
-  // =====================================================
-  // KHỞI ĐỘNG CAMERA
-  // =====================================================
+  document.getElementById("status").className = "";
 
-  async function batDauQuet() {
-
-    dangGui = false;
-
-    document.getElementById("cameraCard")
-      .classList.remove("hidden");
-
-    document.getElementById("restartBtn")
-      .classList.add("hidden");
+  document.getElementById("status").innerHTML =
+    "📷 Đang mở camera...";
 
 
-    // Dừng camera cũ nếu còn
-    if (scanner) {
-
-      try {
-        await scanner.stop();
-      } catch (e) {}
-
-      try {
-        await scanner.clear();
-      } catch (e) {}
-
-      scanner = null;
-    }
+  document
+    .getElementById("cameraCard")
+    .classList.remove("hidden");
 
 
-    scanner = new Html5Qrcode("reader");
+  document
+    .getElementById("restartBtn")
+    .classList.add("hidden");
 
 
-    scanner.start(
+  batDauQuet();
+}
 
-      { facingMode: "environment" },
+
+/* =====================================================
+   MỞ CAMERA
+   ===================================================== */
+
+async function batDauQuet() {
+
+  dangXuLy = false;
+
+
+  document
+    .getElementById("cameraCard")
+    .classList.remove("hidden");
+
+
+  document
+    .getElementById("restartBtn")
+    .classList.add("hidden");
+
+
+  /* Dừng camera cũ */
+
+  if (scanner) {
+
+    try {
+      await scanner.stop();
+    } catch(e) {}
+
+    try {
+      await scanner.clear();
+    } catch(e) {}
+
+    scanner = null;
+  }
+
+
+  document.getElementById("reader").innerHTML = "";
+
+
+  scanner = new Html5Qrcode("reader");
+
+
+  try {
+
+    await scanner.start(
+
+      {
+        facingMode: "environment"
+      },
 
       {
         fps: 10,
+
         qrbox: {
           width: 250,
           height: 250
         }
       },
 
+      function(qrCodeMessage) {
 
-      // QUÉT ĐƯỢC QR
-      qrCodeMessage => {
+        if (dangXuLy) {
+          return;
+        }
 
-        if (dangGui) return;
-
-        dangGui = true;
+        dangXuLy = true;
 
         xuLyQR(qrCodeMessage);
       },
 
-
-      // Camera đang tìm QR
-      errorMessage => {
-        // Không hiển thị lỗi liên tục
+      function(errorMessage) {
+        // Bỏ qua lỗi tìm QR
       }
 
-    ).catch(err => {
-
-      console.error("Camera error:", err);
+    );
 
 
-      document.getElementById("status")
-        .className = "error";
-
-
-      document.getElementById("status").innerHTML =
-        "❌ Không mở được camera.<br><br>" +
-        "Hãy cho phép Camera cho trang này rồi tải lại.";
-
-
-      dangGui = false;
-    });
-  }
-
-
-  // =====================================================
-  // XỬ LÝ QR
-  // =====================================================
-
-  async function xuLyQR(qrData) {
-
-    document.getElementById("status")
-      .className = "";
-
+    document.getElementById("status").className = "";
 
     document.getElementById("status").innerHTML =
-      "⏳ Đang ghi nhận điểm danh...";
+      "📷 Camera đang hoạt động.<br>" +
+      "Đưa mã QR vào khung để quét.";
 
+  }
+
+  catch(error) {
+
+    console.error(error);
+
+    document.getElementById("status").className = "error";
+
+    document.getElementById("status").innerHTML =
+      "❌ Không mở được camera.<br><br>" +
+      "Hãy cho phép trình duyệt sử dụng Camera.";
+
+    dangXuLy = false;
+  }
+
+}
+
+
+/* =====================================================
+   XỬ LÝ QR
+   ===================================================== */
+
+async function xuLyQR(qrData) {
+
+  document.getElementById("status").className = "waiting";
+
+  document.getElementById("status").innerHTML =
+    "⏳ Đang gửi điểm danh...";
+
+
+  /* Dừng camera */
+
+  if (scanner) {
 
     try {
+      await scanner.stop();
+    } catch(e) {}
 
-      // Dừng camera sau khi quét được
-      if (scanner) {
+    try {
+      await scanner.clear();
+    } catch(e) {}
 
-        try {
-          await scanner.stop();
-        } catch (e) {}
-
-        try {
-          await scanner.clear();
-        } catch (e) {}
-
-        scanner = null;
-      }
+    scanner = null;
+  }
 
 
-      // =================================================
-      // GỬI DỮ LIỆU SANG GOOGLE APPS SCRIPT
-      // =================================================
+  /*
+   * Tạo URL gửi sang Apps Script
+   */
 
-      const url =
-        API_URL +
-        "?qr=" + encodeURIComponent(qrData) +
-        "&hoatdong=" + encodeURIComponent(hoatDong) +
-        "&thoigian=" + encodeURIComponent(
-          new Date().toISOString()
-        );
+  const url =
+    API_URL +
+    "?qr=" + encodeURIComponent(qrData) +
+    "&hoatdong=" + encodeURIComponent(hoatDong) +
+    "&thoigian=" + encodeURIComponent(
+      new Date().toISOString()
+    );
 
 
-      console.log("QR:", qrData);
-      console.log("Hoạt động:", hoatDong);
-      console.log("URL gửi:", url);
+  console.log("QR:", qrData);
+  console.log("URL:", url);
 
+
+  /*
+   * Dùng ảnh ẩn để gửi GET.
+   *
+   * Cách này rất ổn định với Google Apps Script
+   * khi trang chạy trên GitHub Pages.
+   */
+
+  try {
+
+    await guiDuLieu(url);
+
+
+    document.getElementById("status").className = "success";
+
+    document.getElementById("status").innerHTML =
+      "✅ Đã gửi điểm danh!<br><br>" +
+      "<b>" + hoatDong + "</b>";
+
+
+    document
+      .getElementById("restartBtn")
+      .classList.remove("hidden");
+
+
+  }
+
+  catch(error) {
+
+    console.error(error);
+
+    document.getElementById("status").className = "error";
+
+    document.getElementById("status").innerHTML =
+      "❌ Không gửi được điểm danh.<br>" +
+      "Vui lòng thử lại.";
+
+
+    document
+      .getElementById("restartBtn")
+      .classList.remove("hidden");
+
+    dangXuLy = false;
+  }
+
+}
+
+
+/* =====================================================
+   GỬI DỮ LIỆU
+   ===================================================== */
+
+function guiDuLieu(url) {
+
+  return new Promise(function(resolve, reject) {
+
+    const img = new Image();
+
+    let daXuLy = false;
+
+
+    function thanhCong() {
+
+      if (daXuLy) return;
+
+      daXuLy = true;
+
+      resolve();
+
+    }
+
+
+    img.onload = thanhCong;
+
+    img.onerror = function() {
 
       /*
-       * GitHub Pages → Google Apps Script
-       * dùng no-cors để tránh lỗi CORS.
+       * Google Apps Script đôi khi chuyển hướng
+       * nên trình duyệt có thể báo lỗi hình ảnh.
+       *
+       * Request vẫn đã được gửi.
        */
 
-      await fetch(url, {
+      if (!daXuLy) {
 
-        method: "GET",
+        daXuLy = true;
 
-        mode: "no-cors",
+        resolve();
 
-        cache: "no-store"
+      }
 
-      });
-
-
-      // =================================================
-      // BÁO THÀNH CÔNG
-      // =================================================
-
-      document.getElementById("status")
-        .className = "success";
+    };
 
 
-      document.getElementById("status").innerHTML =
-        "✅ Điểm danh thành công!<br><br>" +
-        "<b>" + hoatDong + "</b>";
+    img.src = url + "&_=" + Date.now();
 
 
-      document.getElementById("restartBtn")
-        .classList.remove("hidden");
+    /*
+     * Cho request một khoảng thời gian
+     * để gửi đi.
+     */
 
+    setTimeout(function() {
 
-    } catch (error) {
+      if (!daXuLy) {
 
-      console.error("Lỗi gửi dữ liệu:", error);
+        daXuLy = true;
 
+        resolve();
 
-      document.getElementById("status")
-        .className = "error";
+      }
 
+    }, 1500);
 
-      document.getElementById("status").innerHTML =
-        "❌ Không gửi được dữ liệu.<br>" +
-        "Vui lòng thử quét lại.";
+  });
 
-
-      document.getElementById("restartBtn")
-        .classList.remove("hidden");
-
-
-      dangGui = false;
-    }
-  }
+}
 
 </script>
 
